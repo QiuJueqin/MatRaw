@@ -7,6 +7,8 @@
 %
 % CFA (color filter array) can be guessed by several trial-and-errors, if
 % you are not sure.
+%
+% See README.md for more info.
 
 clc;
 
