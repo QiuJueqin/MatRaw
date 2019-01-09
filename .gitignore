@@ -1,0 +1,7 @@
+*~
+*.log
+*.bak
+*.exe
+.idea/
+tmp/
+sample_raw_files/*
