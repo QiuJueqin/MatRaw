@@ -128,6 +128,10 @@ for i = 1:numel(folder_contents)
         delete(pgm_file);
     end
     
+    if min(raw(:)) < param.darkness
+        warning('The minimum ADU (%d) is smaller than the specified darkness level (%d). Please check if there exist dead pixels. (%d pixels detected.)',...
+                min(raw(:)), param.darkness, nnz(raw < param.darkness));
+    end
     % subtract the darkness level
     raw = raw - param.darkness;
     
