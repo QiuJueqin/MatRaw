@@ -1,6 +1,6 @@
 # MatRaw: Read and Process Camera Raw Data with MATLAB
 
-MatRaw is a simple bridge tool to extract pristine image data from raw files of DSLRs/DSLMs. You can use it to convert raw files (.CR2, .NEF, .ARW, .RAF, .ORF, .DNG, etc.) to OS-friendly images (.PNG, .TIFF, .PPM, etc.) or MATLAB-accessible .MAT files, and/or to perform basic processing in ISP pipeline such as [white balancing](https://en.wikipedia.org/wiki/Color_balance) and colorimetric characterization (a.k.a color correction or [color space transformation](https://en.wikipedia.org/wiki/Color_space)).
+MatRaw is a simple bridge tool for extracting completely *intact* image data from raw files of DSLRs/DSLMs. You can use it to convert raw files (.CR2, .NEF, .ARW, .RAF, .ORF, .DNG, etc.) to OS-friendly images (.PNG, .TIFF, .PPM, etc.) or MATLAB-accessible .MAT files, and/or to perform basic processing in ISP pipeline such as [white balancing](https://en.wikipedia.org/wiki/Color_balance) and colorimetric characterization (a.k.a color correction or [color space transformation](https://en.wikipedia.org/wiki/Color_space)).
 
 Currently MatRaw only works on Windows. It uses [dcraw](https://www.cybercom.net/~dcoffin/dcraw/) to decode raw files. Please compile or download the latest version of dcraw and place *dcraw.exe* to any directory listed in the PATH environment variable.
 
@@ -17,7 +17,7 @@ MatRaw can be useful for
 
 # What it does
 
-* *[matrawread](matrawread.m)* first calls dcraw.exe in the command line with *decoding only* option (totally raw, no darkness level subtraction, no interpolation, no white balancing, no aberration correction), and then reads the .PGM image file into the workspace. It will only apply **minimum necessary processes** to the raw images, for example, darkness level subtraction, intensity normalization, and demosaicking but without color interpolation (i.e., combines cfa quadruplet into a "large" RGB pixel, without "guessing" the missing values). Data returned by *matrawread* is exactly what camera "saw" during the exposure (up to a scale factor).
+* *[matrawread](matrawread.m)* first calls dcraw.exe in the command line with *decoding only* option ("-4 -D", totally raw, no darkness level subtraction, no interpolation, no white balancing, no aberration correction), and then reads the .PGM image file into the workspace. It will only apply **minimum necessary processes** to the raw images, for example, darkness level subtraction, intensity normalization, and demosaicking but without color interpolation (i.e., combines cfa quadruplet into a "large" RGB pixel, without "guessing" the missing values). Data returned by *matrawread* is exactly what camera "saw" during the exposure (up to a scale factor).
 
 * *[matrawproc](matrawproc.m)* allows users to choose whether to perform some basic processing in ISP pipeline to the raw image after *matrawread*, including digital signal amplification, white-balancing, and color space transformation. Images produced by *matrawproc* will have similar color appearance to the .JPG thumbnails saved by the camera, but in the absence of post-processing like brightness adjustment, distortion correction, color enhancement, etc.
 
@@ -61,7 +61,7 @@ Following screenshots illustrate the rough workflow of MatRaw. Image was shot by
 <img src="screenshots/debayer.png" width="480">
 
 
-##### Intensity normalized:
+##### Darkness-level subtracted & Intensity normalized (output of *matrawread*:
 
 <img src="screenshots/norm.png" width="480">
 
@@ -71,7 +71,7 @@ Following screenshots illustrate the rough workflow of MatRaw. Image was shot by
 <img src="screenshots/wb.png" width="480">
 
 
-##### Transformed to linear sRGB color space:
+##### Transformed to linear sRGB color space (output of *matrawproc*):
 
 <img src="screenshots/cc.png" width="480">
 

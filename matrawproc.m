@@ -1,6 +1,7 @@
 function output = matrawproc(raw, varargin)
-% MATRAWPROC (MATlab RAW data PROCess) performs minimum processing to the
-% raw image data from DSLR/DSLM.
+% MATRAWPROC (MATlab RAW data PROCess) performs very basic processing
+% (scaling, white balancing, and color space transformation) to the raw
+% image data from DSLR/DSLM.
 %
 % USAGE:
 % output = matrawproc(raw, 'param', value, ...)
@@ -33,7 +34,7 @@ function output = matrawproc(raw, varargin)
 %             values in the target color space, WITHOUT applying any
 %             non-linear functions (e.g., gamma correction). (default =
 %             'sRGB')
-% scale: adjust image's brightness by (100*scale)%. This scaling will be
+% scale: adjust image's brightness by (100*SCALE)%. This scaling will be
 %        applied to the raw image in the very early stage, so it can be
 %        analogously interpreted as digital amplification (of course noise
 %        will be amplified too). (default = 1)
