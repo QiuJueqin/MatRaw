@@ -1,6 +1,6 @@
 function RGB = demosaic_xtrans_nointerp(raw)
 % DEMOSAIC_XTRANS_NOINTERP converts X-Trans CFA images into full color RGB
-% images without color interpolation 
+% images without color interpolation.
 %
 % This script 'combines' 9 pixels from a unit cell in the CFA into one
 % single 'large' pixel in the color image, thus the spatial resolution will

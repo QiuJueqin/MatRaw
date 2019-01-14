@@ -1,6 +1,6 @@
 function params = getrawparams(raw_file)
 % GETRAWPARAMS identifies darkness level, saturation level, and default
-% white balance multipliers for the target raw file
+% white balance multipliers for the target raw file via dcraw.
 
 assert(exist(raw_file, 'file') == 2, 'File %s is not found.', raw_file);
 [~, ~, extension] = fileparts(raw_file);

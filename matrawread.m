@@ -1,6 +1,7 @@
 function varargout = matrawread(raw_dir, varargin)
 % MATRAWREAD (MATlab RAW data READ) converts raw data from DSLR/DSLM to 
-% MATLAB-readable file(s). 
+% MATLAB-readable file(s) and, optionally, applies some noise reduction in
+% raw data (before demosaicking).
 % Make sure dcraw.exe is accessible before running. If not, place it in
 % c:\windows\ or add its path to the value of the PATH environment 
 % variable. If multiple versions of dcraw.exe are accessible, modify line
@@ -21,14 +22,27 @@ function varargout = matrawread(raw_dir, varargin)
 %          files in the directory, e.g., 'c:\foo\*.NEF'
 %
 % OPTIONAL PARAMETERS:
-% cfa: color filter array of the DSLR/DSLM. Its value can only be one of
-%      'RGGB', 'BGGR', 'GRBG', 'GBRG', and 'XTrans'. (default = 'RGGB')
+% demosica: determine whether to apply demosaicking. It can be either true
+%           or false. If set to false, 'cfa' and 'interpolation' parameter
+%           will be ignored. For most cases 'demosaic' will be true, except
+%           for those where intermediate undemosaicked images are required
+%           to output to serve as templates, for example, fixed pattern
+%           noise subtraction, pixel response non-uniformity compensation,
+%           and other raw image noise reduction applications. (default =
+%           true)
+% cfa: specify the color filter array for the DSLR/DSLM. Its value can only
+%      be one of 'RGGB', 'BGGR', 'GRBG', 'GBRG', and 'XTrans'. (default =
+%      'RGGB')
+% inbit: specify the valid bit depth for the input raw data. (default = 14)
+% outbit: specify the valid bit depth for the input raw data. Use 'same' to
+%         set it to be equal to the input bit depth for those cases where
+%         intermediate images are required to output. (default = 16)
 % darkness: specify the darkness level for the DSLR/DSLM. If unknown,
 %           capture one frame with lens cap on and then evaluate it.
-%           (default = 0) 
-% bit: specify the valid bit depth for the raw data. All pixel values will
-%      be normalized by dividing by (2^bit-1) and then stored as uint16
-%      data type. (default = 14)
+%           (default = 0)
+% saturation: specify the saturation level for the DSLR/DSLM. If unknown,
+%             overexpose a scene by 5 or 6 stops and then evaluate it.
+%             (default = 2^inbit-1)
 % format: select in which data format to store the converted file(s). Only
 %         'mat', 'ppm', 'png', and 'tiff' are supported. If an image format
 %         is required, 'ppm' is highly recommended. (default = 'mat')
@@ -39,9 +53,29 @@ function varargout = matrawread(raw_dir, varargin)
 %                (H/2)*(W/2)*3 color image (or (H/3)*(W/3)*3 for Fujifilm's
 %                X-Trans CFA). Note: interpolation for X-Trans CFA will be
 %                extremely slow. (default = false)
-% saturation: specify the saturation level for the DSLR/DSLM. If unknown,
-%             overexpose a scene by 5 or 6 stops and then evaluate it.
-%             (default = 2^bit-1)
+% fpntemplate: specify the fixed pattern noise template, which will be
+%              subtracted from the converted raw image, thus the fixed
+%              pattern noise can be removed. The template should be a H*W
+%              undemosaicked image in uint16 data type, where H and W is
+%              equal to the height and width of the target image. If
+%              'fpntemplate' is given, 'darkness' will be ignored. This
+%              parameter is only for professional users who have demands
+%              for very high accuracy. See ./demo/demo4.m for more details
+%              about how to produce a template image. (default = [])
+% prnutemplate: specify the pixel response non-uniformity template. Pixel
+%               values in the converted raw image will be divided pixelwise
+%               by the values in this template, so the pixel response
+%               non-uniformity can be compensated (sometimes also known as
+%               flat field correction). The template should be a H*W*3
+%               DEMOSAICKED image in uint16 data type, where H and W is
+%               equal to the height and width of the target image. The PRNU
+%               compensation will be applied to the target image after the
+%               darkness level subtraction (or fpn reduction) and
+%               demosaicking, so the template image should be darkness
+%               level subtracted (or fpn removed) as well. This parameter
+%               is only for professional users (even more unusual than fpn
+%               reduction). See ./demo/demo4.m for more details about how
+%               to produce a template image. (default = [])
 % save: specify whether to save the converted file to the disk. Only
 %       alternative when an output argument is given and no wildcard (*) is
 %       used in raw_dir. Otherwise, it will be forced to be true. Set this
@@ -55,7 +89,9 @@ function varargout = matrawread(raw_dir, varargin)
 % suffix: add a suffix to the output file name(s). This will be useful if 
 %         you want to convert the same raw data with different settings.
 %         (default = '')
-% print: print parameters. (default = false)
+% print: whether to print parameters. (default = false)
+%
+% See demo folder for more details.
 %
 % NOTE:
 % the function has only been tested on Windows with MATLAB version higher
@@ -79,12 +115,37 @@ if param.save == true && strcmpi(param.format, 'N/A')
     param.format = 'mat';
 end
 
+if param.demosaic == false && param.interpolation == true
+    warning('Color interpolation will be invalid because demosaic is truned off.');
+    param.interpolation = false;
+end
+% check param.outbit
+% 16-bit is the recommended option for most cases
+% use 'same' only for those intermediate cases, e.g., pattern read noise
+% subtraction, pixel response non-uniformity compensation (a.k.a flat field
+% correction), etc.
+if ischar(param.outbit)
+    if strcmpi(param.outbit, 'same')
+        param.outbit = param.inbit;
+    else
+        error('Output bit depth can only be either an integer or ''same''.');
+    end
+else
+    assert(floor(param.outbit) == param.outbit, 'Output bit depth must be an integer.');
+end
+
+% set the darkness level to 0 if fixed pattern noise template is given
+if ~isempty(param.fpntemplate) && param.darkness ~= 0
+    warning('Fixed pattern noise template is given. Darkness level will be forced to be 0.');
+    param.darkness = 0;
+end
+
 % if no saturation level is specified, use (2^bit - 1) as default
 if isempty(param.saturation)
-    param.saturation = 2^param.bit - 1;
+    param.saturation = 2^param.inbit - 1;
 else
-    assert(param.saturation <= 2^param.bit - 1, 'Saturation level %0.f is greater than the valid maximum value %d (2^%d-1).',...
-                                                param.saturation, 2^param.bit-1, param.bit);
+    assert(param.saturation <= 2^param.inbit - 1, 'Saturation level %0.f is greater than the valid maximum value %d (2^%d-1).',...
+                                                param.saturation, 2^param.inbit-1, param.inbit);
 end
 
 % list all raw data files
@@ -128,22 +189,51 @@ for i = 1:numel(folder_contents)
         delete(pgm_file);
     end
     
-    if min(raw(:)) < param.darkness
-        warning('The minimum ADU (%d) is smaller than the specified darkness level (%d). Please check if there exist dead pixels. (%d pixels detected.)',...
-                min(raw(:)), param.darkness, nnz(raw < param.darkness));
-    end
-    % subtract the darkness level
-    raw = raw - param.darkness;
-    
-    % demosaicking
-    if param.interpolation == true
-        raw = demosaic_(raw, param.cfa);
+    % subtract the fixed pattern noise template OR darkness level
+    if isempty(param.fpntemplate)
+        if min(raw(:)) < param.darkness
+            warning('The minimum ADU (%d) is smaller than the specified darkness level (%d). Please check if there exist dead pixels. (%d pixels detected.)',...
+                    min(raw(:)), param.darkness, nnz(raw < param.darkness));
+        end
+        % subtract the darkness level
+        raw = raw - param.darkness;
     else
-        raw = demosaic_nointerp(raw, param.cfa);
+        assert(isequal(size(raw), size(param.fpntemplate)), 'Fixed pattern noise template must be of the same size as the target image.');
+        assert(isa(param.fpntemplate, 'uint16'), 'Only uint16 data type is supported for the fixed pattern noise template, in case of scale mismatching between two images.');
+        raw = raw - param.fpntemplate;
+    end
+
+    % demosaicking
+    if param.demosaic == true
+        if param.interpolation == true
+            raw = demosaic_(raw, param.cfa);
+        else
+            raw = demosaic_nointerp(raw, param.cfa);
+        end
     end
     
-    % normalize the image and convert it to uint16
-    raw = uint16( double(raw) / (param.saturation - param.darkness) * (2^16 - 1) );
+    % pixel response non-uniformity compensation (a.k.a flat field correction) 
+    if ~isempty(param.prnutemplate)
+        assert(isequal(size(raw), size(param.prnutemplate)), 'Pixel response non-uniformity template must be of the same size as the target image.');
+        assert(isa(param.prnutemplate, 'uint16'), 'Only uint16 data type is supported for the pixel response non-uniformity template, in case of scale mismatching between two images.');
+        % calculate maxima for 3 channels individually
+        ch_max = squeeze(max(max(param.prnutemplate, [], 1), [], 2)); 
+        % normalize it such that the minimum in the compensation image is
+        % equal to 1
+        compensation = double(reshape(ch_max, 1, 1, 3)) ./ double(param.prnutemplate);
+        raw = uint16( double(raw) .* compensation );
+    end
+    
+    % normalize the image and convert it to (param.outbit)-bit data type
+    if param.outbit <= 8
+        raw = uint8( double(raw) / (param.saturation - param.darkness) * (2^param.outbit - 1) );
+    elseif param.outbit <= 16
+        raw = uint16( double(raw) / (param.saturation - param.darkness) * (2^param.outbit - 1) );
+    elseif param.outbit <= 32
+        raw = uint32( double(raw) / (param.saturation - param.darkness) * (2^param.outbit - 1) );
+    else
+        error('Unsigned 32-bit is the maximum supported bit depth.');
+    end
     
     if param.save == true
         % extract capturing parameters and rename the file
@@ -267,14 +357,18 @@ function param = parseInput(varargin)
 % Parse inputs & return structure of parameters
 
 parser = inputParser;
-parser.addParameter('cfa', 'RGGB', @(x)any(strcmpi(x, {'RGGB', 'BGGR', 'GBRG', 'GRBG', 'XTrans'})));
-parser.addParameter('bit', 14, @(x)validateattributes(x, {'numeric'}, {'integer', 'nonnegative'}));
+parser.addParameter('cfa', 'RGGB', @(x)any(strcmpi(x, {'RGGB', 'BGGR', 'GBRG', 'GRBG', 'XTrans'}))); % color filter array
 parser.addParameter('darkness', 0, @(x)validateattributes(x, {'numeric'}, {'nonnegative'}));
+parser.addParameter('demosaic', true, @(x)islogical(x));
 parser.addParameter('format', 'N/A', @(x)any(strcmpi(x, {'N/A', 'mat', 'ppm', 'png', 'tiff'})));
+parser.addParameter('fpntemplate', [], @(x)isnumeric(x)); % fixed pattern noise template
+parser.addParameter('inbit', 14, @(x)validateattributes(x, {'numeric'}, {'integer', 'nonnegative'}));
 parser.addParameter('info', false, @(x)islogical(x));
 parser.addParameter('interpolation', false, @(x)islogical(x));
 parser.addParameter('keeppgm', false, @(x)islogical(x));
+parser.addParameter('outbit', 16, @(x)validateattributes(x, {'numeric', 'char'}, {}));
 parser.addParameter('print', false, @(x)islogical(x));
+parser.addParameter('prnutemplate', [], @(x)isnumeric(x)); % pixel response non-uniformity template (flat field template)
 parser.addParameter('saturation', [], @(x)validateattributes(x, {'numeric'}, {'nonnegative'}));
 parser.addParameter('save', false, @(x)islogical(x));
 parser.addParameter('suffix', '', @(x)ischar(x));
@@ -284,30 +378,55 @@ end
 
 
 function printParams(param)
-if strcmpi(param.cfa, 'XTrans') % make format pretty
+% make format pretty
+if param.save == true
+    attr_idx = [3, 6, 10, 2, 13, 1, 8, 5, 12, 14, 4, 7, 15, 9];
+else
+    attr_idx = [3, 6, 10, 2, 13, 1, 8, 5, 12, 14, 9];
+end
+if strcmpi(param.cfa, 'XTrans')
     param.cfa = 'X-Trans';
 else
     param.cfa = upper(param.cfa);
 end
+if isempty(param.fpntemplate)
+    param.fpntemplate = 'None';
+else
+    [h, w] = size(param.fpntemplate);
+    param.fpntemplate = sprintf('%d*%d %s matrix', h, w, class(param.fpntemplate));
+end
+if isempty(param.prnutemplate)
+    param.prnutemplate = 'None';
+else
+    [h, w, ch] = size(param.prnutemplate);
+    param.prnutemplate = sprintf('%d*%d*%d %s matrix', h, w, ch, class(param.prnutemplate));
+end
+if isempty(param.suffix)
+    param.suffix = 'None';
+end
 disp('Conversion parameters:')
-disp('==============================================================================');
+disp('================================================================================');
 field_names = fieldnames(param);
 field_name_dict.cfa = 'Color filter array';
-field_name_dict.bit = 'Bit depth';
 field_name_dict.darkness = 'Darkness level';
+field_name_dict.demosaic = 'Demosaic';
 field_name_dict.format = 'Output format';
+field_name_dict.fpntemplate = 'Fixed pattern noise template';
+field_name_dict.inbit = 'Input bit depth';
 field_name_dict.info = 'Rename with capturing info';
-field_name_dict.interpolation = 'Demosaicking with interpolation';
+field_name_dict.interpolation = 'Color interpolation';
 field_name_dict.keeppgm = 'Keep the temporary .pgm files';
+field_name_dict.outbit = 'Output bit depth';
+field_name_dict.prnutemplate = 'Pixel response nonuniformity template';
 field_name_dict.saturation = 'Saturation level';
 field_name_dict.save = 'Save outputs to the disk';
 field_name_dict.suffix = 'Filename suffix';
-for i = 1:numel(field_names)
+for i = attr_idx
     if ~strcmpi(field_names{i}, 'print')
         len = fprintf('%s:',field_name_dict.(field_names{i}));
-        fprintf(repmat(' ', 1, 40-len));
+        fprintf(repmat(' ', 1, 42-len));
         fprintf('%s\n', string(param.(field_names{i})));
     end
 end
-disp('==============================================================================');
+disp('================================================================================');
 end

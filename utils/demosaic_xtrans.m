@@ -1,6 +1,6 @@
 function [ Image ] = demosaic_xtrans( Image )
 % converts XTrans mosaiced Images into full color RGB images
-% by Alexander Fr?hlich - Jan, 2016
+% by Alexander Froehlich - Jan, 2016
 % http://alexanderfroehlich.blogspot.com/2016/01/demosaicking-algorithm-for-x-trans.html
 
 [~, ~, Colors] = size(Image);

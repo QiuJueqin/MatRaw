@@ -178,15 +178,16 @@ end
 
 
 function printParams(param)
-if strcmpi(param.colorspace, 'sRGB') % make format pretty
+% make format pretty
+if strcmpi(param.colorspace, 'sRGB')
     param.colorspace = 'sRGB';
 elseif strcmpi(param.colorspace, 'Adobe-RGB')    
     param.colorspace = 'Adobe-RGB';
 end
-width = 40;
+width = 42;
 disp('Processing parameters:')
-disp('==============================================================================');
-len = fprintf('White balance coefficients vector');
+disp('================================================================================');
+len = fprintf('White balance coefficients vector:');
 fprintf([repmat(' ', 1, width-len), '%.2f(R), %.2f(G), %.2f(B)'], param.wb_gain);
 if strcmpi(param.wb, 'manual')
     fprintf(' (manual)\n');
@@ -195,17 +196,17 @@ elseif strcmpi(param.wb, 'grayworld')
 else
     fprintf('\n');
 end
-len = fprintf('Brightness scale');
+len = fprintf('Brightness scale:');
 fprintf([repmat(' ', 1, width-len), '%.1f\n'], param.scale);
-len = fprintf('Camera RGB => XYZ matrix');
+len = fprintf('Camera RGB => XYZ matrix:');
 fprintf([repmat(' ', 1, width-len), '[%5.2f, %5.2f, %5.2f ]\n'], param.cam2xyz(1,:));
 fprintf([repmat(' ', 1, width), '[%5.2f, %5.2f, %5.2f ]\n'], param.cam2xyz(2,:));
 fprintf([repmat(' ', 1, width), '[%5.2f, %5.2f, %5.2f ]\n'], param.cam2xyz(3,:));
-len = fprintf('Target color space');
+len = fprintf('Target color space:');
 fprintf([repmat(' ', 1, width-len), '%s (linear)\n'], param.colorspace);
-len = fprintf('Camera RGB => %s (linear) matrix', param.colorspace);
+len = fprintf('Camera RGB => %s (linear) matrix:', param.colorspace);
 fprintf([repmat(' ', 1, width-len), '[%5.2f, %5.2f, %5.2f ]\n'], param.cam2rgb(1,:));
 fprintf([repmat(' ', 1, width), '[%5.2f, %5.2f, %5.2f ]\n'], param.cam2rgb(2,:));
 fprintf([repmat(' ', 1, width), '[%5.2f, %5.2f, %5.2f ]\n'], param.cam2rgb(3,:));
-disp('==============================================================================');
+disp('================================================================================');
 end

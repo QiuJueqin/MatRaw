@@ -3,7 +3,7 @@ function matrices = readmatrices()
 % triplets into camera RGB values, and calculates their inversions to get
 % color matrices that converts camera RGB values into XYZ values, i.e.,
 % matrices in dcraw.c:                                   XYZ -> camera RGB
-% matrices returned by this script (stored in MATRICES): camera RGB -> XYZ
+% matrices returned by this script:                      camera RGB -> XYZ
 %
 % NOTE:
 % 1. The extracted matrices have been saved in the current directory.

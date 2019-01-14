@@ -1,6 +1,6 @@
 function cam2xyz = getcam2xyz(camera_model)
 % GETCAM2XYZ returns the color mactrix (camera RGB -> XYZ) of the given
-% camera model
+% camera model.
 % 
 % Input CAMERA_MODEL can be completely or partly matched to the models in
 % the stored database. The script will search for its closest match(es).
