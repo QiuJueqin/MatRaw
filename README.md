@@ -17,9 +17,9 @@ MatRaw would be useful for
 
 # What it does
 
-* *[matrawread](matrawread.m)* is the core of MatRaw, which first calls dcraw.exe in the command line with *decoding only* option ("-4 -D", totally raw, no darkness level subtraction, no interpolation, no white balancing, no aberration correction), and then reads the .PGM image file into the workspace. It will only apply **minimum necessary processes** to the raw images, for example, darkness level subtraction or fixed pattern noise (FPN) reduction, pixel response non-uniformity (PRNU) compensation (aka flat field correction), intensity normalization, and demosaicking with or without color interpolation (demosaicking without color interpolation will combine a quadruplet in color filter array into a "large" RGB pixel, rather than "guessing" the missing values). *matrawread* is designed for treating cameras as **measuring apparatus**.
+* [`matrawread`](matrawread.m) is the core of MatRaw, which first calls dcraw.exe in the command line with *decoding only* option ("-4 -D", totally raw, no darkness level subtraction, no interpolation, no white balancing, no aberration correction), and then reads the .PGM image file into the workspace. It will only apply **minimum necessary processes** to the raw images, for example, darkness level subtraction or fixed pattern noise (FPN) reduction, pixel response non-uniformity (PRNU) compensation (aka flat field correction), intensity normalization, and demosaicking with or without color interpolation (demosaicking without color interpolation will combine a quadruplet in color filter array into a "large" RGB pixel, rather than "guessing" the missing values). *matrawread* is designed for treating cameras as **measuring apparatus ([Photogrammetry](https://en.wikipedia.org/wiki/Photogrammetry))**.
 
-* *[matrawproc](matrawproc.m)* allows users to perform some basic processing in ISP pipeline to the raw image after *matrawread*, including digital signal amplification, white-balancing, and color space transformation. Images produced by *matrawproc* will have similar color appearance to the .JPG thumbnails saved by the camera, but in the absence of post-processing like brightness adjustment, distortion correction, color enhancement, etc. *matrawproc* is designed for making images appear **as realistic as our eyes perceive**.
+* [`matrawproc`](matrawproc.m) allows users to perform some basic processing in ISP pipeline to the raw image after *matrawread*, including digital signal amplification, white-balancing, and color space transformation. Images produced by *matrawproc* will have similar color appearance to the .JPG thumbnails saved by the camera, but in the absence of post-processing like brightness adjustment, distortion correction, color enhancement, etc. *matrawproc* is designed for making images appear **as realistic as our eyes perceive**.
 
 # Usage
 
@@ -64,14 +64,18 @@ MatRaw would be useful for
 
 See demo folder for more details.
 
+# :warning: Attention
+
+[`getrawparams`](utils/getrawparams.m) function is able to automatically identify the darkness and saturation levels given a raw file by executing `dcraw -v -d`. However, darkness and saturation levels reported by dcraw may be **WRONG** for some camera models (e.g., Canon EOS 5D Mark IV)! Run your own calibration if the output image had a weird appearance, as done in [demo2.m](demo/demo2.m).
+
 # Q&A
 
 * **Q1**: What are *fixed pattern noise* and *pixel response non-uniformity*?  
   **A1**: They are sensor noise that can be calibrated in advance and removed from each target image. See [this post](http://theory.uchicago.edu/~ejm/pix/20d/tests/noise/index.html) for the comprehensive introduction. They are worth the trouble only when extremely high color accuracy is required. Feel free to ignore them if you are not sure what they are.  
 * **Q2**: How to get a fixed pattern noise template to perform FPN reduction?  
-  **A2**: FPN template can be obtained by taking many black frames and averaging over them. See demo4 for more details.  
+  **A2**: FPN template can be obtained by taking many black frames and averaging over them. See [demo4](demo/demo4.m) for more details.  
 * **Q3**: How to get a pixel response non-uniformity template to perform PRNU compensation?  
-  **A3**: PRNU template can be obtained by taking multiple frames for a uniformly lit object (a black wall for instance) at the lowest ISO and about 1/2 to 1 stop down from sensor saturation, and then averaging over them after FPN subtracted. Again, see demo4 for more details.  
+  **A3**: PRNU template can be obtained by taking multiple frames for a uniformly lit object (a blank wall for instance) at the lowest ISO and about 1/2 to 1 stop down from sensor saturation, and then averaging over them after FPN subtracted. Again, see [demo4](demo/demo4.m) for more details.  
 * **Q4**: Is it possible to remove image noise from other source?  
   **A4**: Other fixed noise can be removed by appropriately passing the `fpntemplate` argument. For example, thermal noise can be effectively removed by replacing a fixed pattern noise template with a thermal noise template, which is exactly the procedure that is carried out by the camera when *long exposure noise reduction* (LENR) is enabled.
 

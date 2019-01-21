@@ -39,5 +39,5 @@ I_colorchecker = matrawread('.\MatRaw\sample_raw_files\Nikon_D3x\colorchecker.NE
                             'saturation', saturation,...
                             'interpolation', true);
 
-% scale brightness by 2 for better visualization (not necessary)
+% scale brightness by 2 for better visualization
 figure; imshow(2 * I_colorchecker);

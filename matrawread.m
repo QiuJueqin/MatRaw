@@ -212,7 +212,7 @@ for i = 1:numel(folder_contents)
         end
     end
     
-    % pixel response non-uniformity compensation (a.k.a flat field correction) 
+    % pixel response non-uniformity compensation
     if ~isempty(param.prnutemplate)
         assert(isequal(size(raw), size(param.prnutemplate)), 'Pixel response non-uniformity template must be of the same size as the target image.');
         assert(isa(param.prnutemplate, 'uint16'), 'Only uint16 data type is supported for the pixel response non-uniformity template, in case of scale mismatching between two images.');

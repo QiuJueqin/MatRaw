@@ -3,7 +3,12 @@
 % the same directory.
 %
 % DARKNESS and SATURATION can be calculated by calibrating the camera, or
-% by running 'dcraw -v [raw_dir]' to view.
+% by running 'dcraw -v [raw_dir]' to view. 
+%
+% NOTE: darkness and saturation levels reported by dcraw may be wrong for
+% some camera models (e.g., Canon EOS 5D Mark IV)!!! Run your own
+% calibration if the output image had a weird appearance, as done in
+% demo2.m.
 %
 % CFA (color filter array) can be guessed by several trial-and-errors, if
 % you are not sure.

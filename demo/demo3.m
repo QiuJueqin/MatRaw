@@ -13,6 +13,10 @@ raw_dir = '.\MatRaw\sample_raw_files\Fujifilm_XT2\DSCF4886.RAF';
 
 % automatically identify camera model and the darkness & saturation levels
 % via dcraw
+% NOTE: darkness and saturation levels reported by dcraw may be wrong for
+% some camera models (e.g., Canon EOS 5D Mark IV)!!! Run your own
+% calibration if the output image had a weird appearance, as done in
+% demo2.m.
 raw_params = getrawparams(raw_dir);
 disp(raw_params);
 
