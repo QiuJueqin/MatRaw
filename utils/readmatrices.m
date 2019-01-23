@@ -6,8 +6,10 @@ function matrices = readmatrices()
 % matrices returned by this script:                      camera RGB -> XYZ
 %
 % NOTE:
-% 1. The extracted matrices have been saved in the current directory.
-% Download the latest version of dcraw.c, replace the existing one, and run
+% 1. The extracted matrices have been saved in the current directory
+% (matrices_cam2xyz.mat). You don't need to run this script unless your
+% camera model is not included in the matrices_cam2xyz.mat. If so, please
+% download the latest version of dcraw.c, replace the existing one, and run
 % ========================================================
 % matrices_cam2xyz = readmatrices();
 % save .\MatRaw\matrices_cam2xyz.mat matrices_cam2xyz
@@ -15,8 +17,8 @@ function matrices = readmatrices()
 % only if your camera model is not included in the existing file.
 %
 % 2. This script has only been tested for dcraw.c versions 8.77 and 9.28.
-% For other versions, modify the regular expressions in lines 31, 36, and
-% 38, if encounters errors.
+% For other versions, modify the regular expressions in lines 33, 38, and
+% 40, if encounters errors.
 %
 % Copyright
 % Qiu Jueqin - Jan, 2019

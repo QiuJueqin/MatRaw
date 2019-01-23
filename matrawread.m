@@ -5,7 +5,7 @@ function varargout = matrawread(raw_dir, varargin)
 % Make sure dcraw.exe is accessible before running. If not, place it in
 % c:\windows\ or add its path to the value of the PATH environment 
 % variable. If multiple versions of dcraw.exe are accessible, modify line
-% 117 to specify the version you wish to call.
+% 178 to specify the version you wish to call.
 %
 % USAGE:
 % matrawread(raw_dir, 'param', value, ...)
