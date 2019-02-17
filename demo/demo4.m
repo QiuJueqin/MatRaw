@@ -10,6 +10,7 @@
 % http://theory.uchicago.edu/~ejm/pix/20d/tests/noise/noise-p4.html for
 % more info.
 
+clear; close all; clc;
 
 %% fixed pattern noise calibration
 % Note: generating fpn template for some Nikon models is problematic,

@@ -8,37 +8,38 @@ function output = matrawproc(raw, varargin)
 %        : process the raw data and return the output image
 %
 % INPUTS:
-% raw: raw image in uint16 data type (after demosaicking, with darkness
-%      level subtracted)
+% raw:        raw image in uint16 data type (after demosaicking, with
+%             darkness level subtracted)
 %
 % OPTIONAL PARAMETERS:
-% wb: white balancing option, can be a 3x1 vector, or 'manual', or
-%     'grayworld'. If 'wb' is a numeric vector (in [R, G, B] format), the
-%     script will use it as the gain coefficients to correct raw image's
-%     white balance; if 'wb'='manual', the script will allow user to
-%     manually select a reference nuetral region in the raw image, which 
-%     will be used to calculate wb coefficients; if 'wb'='grayworld', gray
-%     world algorithm will be employed to estimate wb coefficients.
-%     (default = 'manual')
-% cam2xyz: specify the device-dependent color matrix for the DSLR/DSLM,
-%          which transforms the pixels' values from camera RGB color space
-%          into CIE1931 XYZ color space. Dcraw provides such matrices, run 
-%          =====================================
-%          matrix = getcam2xyz(camera_model);
-%          =====================================
-%          to get the matrix for the target camera model. (default = 3x3
-%          identity matrix)
+% wb:         white balancing option, can be a 3x1 vector, or 'manual', or
+%             'grayworld'. If 'wb' is a numeric vector (in [R, G, B]
+%             format), the script will use it as the gain coefficients to
+%             correct raw image's white balance; if 'wb'='manual', the
+%             script will allow user to manually select a reference nuetral
+%             region in the raw image, which will be used to calculate wb
+%             coefficients; if 'wb'='grayworld', gray world algorithm will
+%             be employed to estimate wb coefficients. (default = 'manual')
+% cam2xyz:    specify the device-dependent color matrix for the DSLR/DSLM,
+%             which transforms the pixels' values from camera RGB color
+%             space into CIE1931 XYZ color space. Dcraw provides such
+%             matrices, run
+%             =====================================
+%             matrix = getcam2xyz(camera_model);
+%             =====================================
+%             to get the matrix for the target camera model. (default = 3x3
+%             identity matrix)
 % colorspace: specify the target color space for the output image.
 %             Currently only sRGB and Adobe RGB are supported. Note that
 %             this script only converts the XYZ values to the LINEAR RGB
 %             values in the target color space, WITHOUT applying any
 %             non-linear functions (e.g., gamma correction). (default =
 %             'sRGB')
-% scale: adjust image's brightness by (100*SCALE)%. This scaling will be
-%        applied to the raw image in the very early stage, so it can be
-%        analogously interpreted as digital amplification (of course noise
-%        will be amplified too). (default = 1)
-% print: print parameters. (default = false)
+% scale:      adjust image's brightness by (100*SCALE)%. This scaling will
+%             be applied to the raw image in the very early stage, so it
+%             can be analogously interpreted as digital amplification (of
+%             course noise will be amplified too). (default = 1)
+% print:      print parameters. (default = false)
 %
 % NOTE:
 % the function has only been tested on Windows with MATLAB version higher
@@ -167,6 +168,7 @@ function param = parseInput(varargin)
 % Parse inputs & return structure of parameters
 
 parser = inputParser;
+parser.PartialMatching = false;
 parser.addParameter('cam2xyz', [], @(x)validateattributes(x, {'numeric'}, {'size',[3,3]}));
 parser.addParameter('colorspace', 'sRGB', @(x)any(strcmpi(x, {'sRGB', 'Adobe-RGB'})));
 parser.addParameter('print', false, @(x)islogical(x));

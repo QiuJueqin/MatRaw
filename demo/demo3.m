@@ -7,7 +7,7 @@
 %
 % See README.md for more info.
 
-clc;
+clear; close all; clc;
 
 raw_dir = '.\MatRaw\sample_raw_files\Fujifilm_XT2\DSCF4886.RAF';
 

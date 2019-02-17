@@ -10,7 +10,7 @@
 %
 % See README.md for more info.
 
-clc;
+clear; close all; clc;
 
 input_bit = 14; % valid bit depth for D3x
 

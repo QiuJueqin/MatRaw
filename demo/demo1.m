@@ -18,13 +18,13 @@
 %
 % See README.md for more info.
 
-clc;
+clear; close all; clc;
 
 raw_dir = '.\MatRaw\sample_raw_files\Sony_ILCE7\*.ARW';
 read_attr = {'cfa', 'RGGB',...
              'darkness', 128,...
              'saturation', 4095,...
              'format', 'ppm',...
-             'info', true}; % rename the converted files with capturing info
+             'rename', true}; % rename the converted files with capturing info
          
 matrawread(raw_dir, read_attr{:});

@@ -18,34 +18,37 @@ function varargout = matrawread(raw_dir, varargin)
 %   : load the converted image and raw data info into MATLAB workspace
 %
 % INPUTS:
-% raw_dir: path of the raw data file(s). Use wildcard '*' to select all
-%          files in the directory, e.g., 'c:\foo\*.NEF'
+% raw_dir:       path of the raw data file(s). Use wildcard '*' to select
+%                all files in the directory, e.g., 'c:\foo\*.NEF'
 %
 % OPTIONAL PARAMETERS:
-% demosica: determine whether to apply demosaicking. It can be either true
-%           or false. If set to false, 'cfa' and 'interpolation' parameter
-%           will be ignored. For most cases 'demosaic' will be true, except
-%           for those where intermediate undemosaicked images are required
-%           to output to serve as templates, for example, fixed pattern
-%           noise subtraction, pixel response non-uniformity compensation,
-%           and other raw image noise reduction applications. (default =
-%           true)
-% cfa: specify the color filter array for the DSLR/DSLM. Its value can only
-%      be one of 'RGGB', 'BGGR', 'GRBG', 'GBRG', and 'XTrans'. (default =
-%      'RGGB')
-% inbit: specify the valid bit depth for the input raw data. (default = 14)
-% outbit: specify the valid bit depth for the input raw data. Use 'same' to
-%         set it to be equal to the input bit depth for those cases where
-%         intermediate images are required to output. (default = 16)
-% darkness: specify the darkness level for the DSLR/DSLM. If unknown,
-%           capture one frame with lens cap on and then evaluate it.
-%           (default = 0)
-% saturation: specify the saturation level for the DSLR/DSLM. If unknown,
-%             overexpose a scene by 5 or 6 stops and then evaluate it.
-%             (default = 2^inbit-1)
-% format: select in which data format to store the converted file(s). Only
-%         'mat', 'ppm', 'png', and 'tiff' are supported. If an image format
-%         is required, 'ppm' is highly recommended. (default = 'mat')
+% demosica:      determine whether to apply demosaicking. It can be either
+%                true or false. If set to false, 'cfa' and 'interpolation'
+%                parameter will be ignored. For most cases 'demosaic' will
+%                be true, except for those where intermediate undemosaicked
+%                images are required to output to serve as templates, for
+%                example, fixed pattern noise subtraction, pixel response
+%                non-uniformity compensation, and other raw image noise
+%                reduction applications. (default = true)
+% cfa:           specify the color filter array for the DSLR/DSLM. Its
+%                value can only be one of 'RGGB', 'BGGR', 'GRBG', 'GBRG',
+%                and 'XTrans'. (default = 'RGGB')
+% inbit:         specify the valid bit depth for the input raw data.
+%                (default = 14) 
+% outbit:        specify the valid bit depth for the input raw data. Use
+%                'same' to set it to be equal to the input bit depth for
+%                those cases where intermediate images are required to
+%                output. (default = 16)
+% darkness:      specify the darkness level for the DSLR/DSLM. If unknown,
+%                capture one frame with lens cap on and then evaluate it.
+%                (default = 0)
+% saturation:    specify the saturation level for the DSLR/DSLM. If
+%                unknown, overexpose a scene by 5 or 6 stops and then
+%                evaluate it. (default = 2^inbit-1)
+% format:        select in which data format to store the converted
+%                file(s). Only 'mat', 'ppm', 'png', and 'tiff' are
+%                supported. If an image format is required, 'ppm' is highly
+%                recommended. (default = 'mat')
 % interpolation: can be either true or false. If true, MATLAB built-in
 %                function demosaic() will be used to generate a H*W*3 color
 %                image from the H*W*1 (grayscale) cfa image. Otherwise, no
@@ -53,43 +56,46 @@ function varargout = matrawread(raw_dir, varargin)
 %                (H/2)*(W/2)*3 color image (or (H/3)*(W/3)*3 for Fujifilm's
 %                X-Trans CFA). Note: interpolation for X-Trans CFA will be
 %                extremely slow. (default = false)
-% fpntemplate: specify the fixed pattern noise template, which will be
-%              subtracted from the converted raw image, thus the fixed
-%              pattern noise can be removed. The template should be a H*W
-%              undemosaicked image in uint16 data type, where H and W is
-%              equal to the height and width of the target image. If
-%              'fpntemplate' is given, 'darkness' will be ignored. This
-%              parameter is only for professional users who have demands
-%              for very high accuracy. See ./demo/demo4.m for more details
-%              about how to produce a template image. (default = [])
-% prnutemplate: specify the pixel response non-uniformity template. Pixel
-%               values in the converted raw image will be divided pixelwise
-%               by the values in this template, so the pixel response
-%               non-uniformity can be compensated (sometimes also known as
-%               flat field correction). The template should be a H*W*3
-%               DEMOSAICKED image in uint16 data type, where H and W is
-%               equal to the height and width of the target image. The PRNU
-%               compensation will be applied to the target image after the
-%               darkness level subtraction (or fpn reduction) and
-%               demosaicking, so the template image should be darkness
-%               level subtracted (or fpn removed) as well. This parameter
-%               is only for professional users (even more unusual than fpn
-%               reduction). See ./demo/demo4.m for more details about how
-%               to produce a template image. (default = [])
-% save: specify whether to save the converted file to the disk. Only
-%       alternative when an output argument is given and no wildcard (*) is
-%       used in raw_dir. Otherwise, it will be forced to be true. Set this
-%       to false to save time if you only wish to access the converted data
-%       in MATLAB workspace. (default = false)
-% info: can be either true or false. If true, output file(s) will be
-%       renamed with capturing parameters (exposure time, F number, ISO,
-%       time stamp). (default = false)
-% keeppgm: can be either true or false. If true, the temporary .pgm file
-%          generated by dcraw.exe will be kept. (default = false)
-% suffix: add a suffix to the output file name(s). This will be useful if 
-%         you want to convert the same raw data with different settings.
-%         (default = '')
-% print: whether to print parameters. (default = false)
+% fpntemplate:   specify the fixed pattern noise template, which will be
+%                subtracted from the converted raw image, thus the fixed
+%                pattern noise can be removed. The template should be a H*W
+%                undemosaicked image in uint16 data type, where H and W is
+%                equal to the height and width of the target image. If
+%                'fpntemplate' is given, 'darkness' will be ignored. This
+%                parameter is only for professional users who have demands
+%                for very high accuracy. See ./demo/demo4.m for more
+%                details about how to produce a template image. (default =
+%                [])
+% prnutemplate:  specify the pixel response non-uniformity template. Pixel
+%                values in the converted raw image will be divided
+%                pixelwise by the values in this template, so the pixel
+%                response non-uniformity can be compensated (sometimes also
+%                known as flat field correction). The template should be a
+%                H*W*3 DEMOSAICKED image in uint16 data type, where H and W
+%                is equal to the height and width of the target image. The
+%                PRNU compensation will be applied to the target image
+%                after the darkness level subtraction (or fpn reduction)
+%                and demosaicking, so the template image should be darkness
+%                level subtracted (or fpn removed) as well. This parameter
+%                is only for professional users (even more unusual than fpn
+%                reduction). See ./demo/demo4.m for more details about how
+%                to produce a template image. (default = [])
+% save:          specify whether to save the converted file to the disk.
+%                Only alternative when an output argument is given and no
+%                wildcard (*) is used in raw_dir. Otherwise, it will be
+%                forced to be true. Set this to false to save time if you
+%                only wish to access the converted data in MATLAB
+%                workspace. (default = false)
+% rename:        can be either true or false. If true, output file(s) will
+%                be renamed with capturing parameters (exposure time, F
+%                number, ISO, time stamp). (default = false)
+% keeppgm:       can be either true or false. If true, the temporary .pgm
+%                file generated by dcraw.exe will be kept. (default =
+%                false)
+% suffix:        add a suffix to the output file name(s). This will be
+%                useful if you want to convert the same raw data with
+%                different settings. (default = '')
+% print:         whether to print parameters. (default = false)
 %
 % See demo folder for more details.
 %
@@ -237,7 +243,7 @@ for i = 1:numel(folder_contents)
     
     if param.save == true
         % extract capturing parameters and rename the file
-        if param.info == true
+        if param.rename == true
             try
                 info = imfinfo(raw_file);
                 if numel(info) > 1
@@ -357,13 +363,14 @@ function param = parseInput(varargin)
 % Parse inputs & return structure of parameters
 
 parser = inputParser;
+parser.PartialMatching = false;
 parser.addParameter('cfa', 'RGGB', @(x)any(strcmpi(x, {'RGGB', 'BGGR', 'GBRG', 'GRBG', 'XTrans'}))); % color filter array
 parser.addParameter('darkness', 0, @(x)validateattributes(x, {'numeric'}, {'nonnegative'}));
 parser.addParameter('demosaic', true, @(x)islogical(x));
 parser.addParameter('format', 'N/A', @(x)any(strcmpi(x, {'N/A', 'mat', 'ppm', 'png', 'tiff'})));
 parser.addParameter('fpntemplate', [], @(x)isnumeric(x)); % fixed pattern noise template
 parser.addParameter('inbit', 14, @(x)validateattributes(x, {'numeric'}, {'integer', 'nonnegative'}));
-parser.addParameter('info', false, @(x)islogical(x));
+parser.addParameter('rename', false, @(x)islogical(x));
 parser.addParameter('interpolation', false, @(x)islogical(x));
 parser.addParameter('keeppgm', false, @(x)islogical(x));
 parser.addParameter('outbit', 16, @(x)validateattributes(x, {'numeric', 'char'}, {}));
@@ -413,7 +420,7 @@ field_name_dict.demosaic = 'Demosaic';
 field_name_dict.format = 'Output format';
 field_name_dict.fpntemplate = 'Fixed pattern noise template';
 field_name_dict.inbit = 'Input bit depth';
-field_name_dict.info = 'Rename with capturing info';
+field_name_dict.rename = 'Rename with capturing info';
 field_name_dict.interpolation = 'Color interpolation';
 field_name_dict.keeppgm = 'Keep the temporary .pgm files';
 field_name_dict.outbit = 'Output bit depth';
