@@ -231,14 +231,20 @@ for i = 1:numel(folder_contents)
     end
     
     % normalize the image and convert it to (param.outbit)-bit data type
-    if param.outbit <= 8
-        raw = uint8( double(raw) / (param.saturation - param.darkness) * (2^param.outbit - 1) );
-    elseif param.outbit <= 16
-        raw = uint16( double(raw) / (param.saturation - param.darkness) * (2^param.outbit - 1) );
-    elseif param.outbit <= 32
-        raw = uint32( double(raw) / (param.saturation - param.darkness) * (2^param.outbit - 1) );
+    if param.outbit == param.inbit &&...
+            param.saturation == (2^param.outbit - 1) &&...
+            param.darkness == 0
+        % do nothing, only for acceleration (no data type conversion)
     else
-        error('Unsigned 32-bit is the maximum supported bit depth.');
+        if param.outbit <= 8
+            raw = uint8( double(raw) / (param.saturation - param.darkness) * (2^param.outbit - 1) );
+        elseif param.outbit <= 16
+            raw = uint16( double(raw) / (param.saturation - param.darkness) * (2^param.outbit - 1) );
+        elseif param.outbit <= 32
+            raw = uint32( double(raw) / (param.saturation - param.darkness) * (2^param.outbit - 1) );
+        else
+            error('Unsigned 32-bit is the maximum supported bit depth.');
+        end
     end
     
     if param.save == true
