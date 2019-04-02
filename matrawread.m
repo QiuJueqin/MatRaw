@@ -5,7 +5,7 @@ function varargout = matrawread(raw_dir, varargin)
 % Make sure dcraw.exe is accessible before running. If not, place it in
 % c:\windows\ or add its path to the value of the PATH environment 
 % variable. If multiple versions of dcraw.exe are accessible, modify line
-% 178 to specify the version you wish to call.
+% 184 to specify the version you wish to call.
 %
 % USAGE:
 % matrawread(raw_dir, 'param', value, ...)
@@ -33,12 +33,11 @@ function varargout = matrawread(raw_dir, varargin)
 % cfa:           specify the color filter array for the DSLR/DSLM. Its
 %                value can only be one of 'RGGB', 'BGGR', 'GRBG', 'GBRG',
 %                and 'XTrans'. (default = 'RGGB')
-% inbit:         specify the valid bit depth for the input raw data.
-%                (default = 14) 
-% outbit:        specify the valid bit depth for the input raw data. Use
-%                'same' to set it to be equal to the input bit depth for
-%                those cases where intermediate images are required to
-%                output. (default = 16)
+% inbit:         valid bit depth for the input raw data. (default = 14) 
+% outbit:        bit depth for the converted output image. Use 'same' to
+%                set it to be equal to the input bit depth for those cases
+%                where intermediate images are required to output.
+%                (default = 16)
 % darkness:      specify the darkness level for the DSLR/DSLM. If unknown,
 %                capture one frame with lens cap on and then evaluate it.
 %                (default = 0)
