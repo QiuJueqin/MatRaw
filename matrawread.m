@@ -193,6 +193,15 @@ for i = 1:numel(folder_contents)
     if param.keeppgm == false
         delete(pgm_file);
     end
+
+    % demosaicking
+    if param.demosaic == true
+        if param.interpolation == true
+            raw = demosaic_(raw, param.cfa);
+        else
+            raw = demosaic_nointerp(raw, param.cfa);
+        end
+    end
     
     % subtract the fixed pattern noise template OR darkness level
     if isempty(param.fpntemplate)
@@ -207,26 +216,12 @@ for i = 1:numel(folder_contents)
         assert(isa(param.fpntemplate, 'uint16'), 'Only uint16 data type is supported for the fixed pattern noise template, in case of scale mismatching between two images.');
         raw = raw - param.fpntemplate;
     end
-
-    % demosaicking
-    if param.demosaic == true
-        if param.interpolation == true
-            raw = demosaic_(raw, param.cfa);
-        else
-            raw = demosaic_nointerp(raw, param.cfa);
-        end
-    end
     
     % pixel response non-uniformity compensation
     if ~isempty(param.prnutemplate)
         assert(isequal(size(raw), size(param.prnutemplate)), 'Pixel response non-uniformity template must be of the same size as the target image.');
-        assert(isa(param.prnutemplate, 'uint16'), 'Only uint16 data type is supported for the pixel response non-uniformity template, in case of scale mismatching between two images.');
-        % calculate maxima for 3 channels individually
-        ch_max = squeeze(max(max(param.prnutemplate, [], 1), [], 2)); 
-        % normalize it such that the minimum in the compensation image is
-        % equal to 1
-        compensation = double(reshape(ch_max, 1, 1, 3)) ./ double(param.prnutemplate);
-        raw = uint16( double(raw) .* compensation );
+        assert(isa(param.prnutemplate, 'double'), 'Only double data type is supported for the pixel response non-uniformity template.');
+        raw = uint16( double(raw) .* param.prnutemplate );
     end
     
     % normalize the image and convert it to (param.outbit)-bit data type
@@ -250,10 +245,7 @@ for i = 1:numel(folder_contents)
         % extract capturing parameters and rename the file
         if param.rename == true
             try
-                info = imfinfo(raw_file);
-                if numel(info) > 1
-                    info = info(1);
-                end
+                info = getrawinfo(raw_file);
                 exposure = info.DigitalCamera.ExposureTime;
                 f_number = info.DigitalCamera.FNumber;
                 iso = info.DigitalCamera.ISOSpeedRatings;
@@ -388,9 +380,9 @@ end
 function printParams(param)
 % make format pretty
 if param.save == true
-    attr_idx = [3, 6, 10, 2, 13, 1, 8, 5, 12, 14, 4, 7, 15, 9];
+    attr_indices = [6, 9, 2, 13, 3, 1, 7, 5, 11, 8, 12, 14, 4, 15];
 else
-    attr_idx = [3, 6, 10, 2, 13, 1, 8, 5, 12, 14, 9];
+    attr_indices = [6, 9, 2, 13, 3, 1, 7, 5, 11, 8];
 end
 if strcmpi(param.cfa, 'XTrans')
     param.cfa = 'X-Trans';
@@ -400,8 +392,8 @@ end
 if isempty(param.fpntemplate)
     param.fpntemplate = 'None';
 else
-    [h, w] = size(param.fpntemplate);
-    param.fpntemplate = sprintf('%d*%d %s matrix', h, w, class(param.fpntemplate));
+    [h, w, ch] = size(param.fpntemplate);
+    param.fpntemplate = sprintf('%d*%d*%d %s matrix', h, w, ch, class(param.fpntemplate));
 end
 if isempty(param.prnutemplate)
     param.prnutemplate = 'None';
@@ -425,11 +417,11 @@ field_name_dict.rename = 'Rename with capturing info';
 field_name_dict.interpolation = 'Color interpolation';
 field_name_dict.keeppgm = 'Keep the temporary .pgm files';
 field_name_dict.outbit = 'Output bit depth';
-field_name_dict.prnutemplate = 'Pixel response nonuniformity template';
+field_name_dict.prnutemplate = 'Pixel response non-uniformity template';
 field_name_dict.saturation = 'Saturation level';
 field_name_dict.save = 'Save outputs to the disk';
 field_name_dict.suffix = 'Filename suffix';
-for i = attr_idx
+for i = attr_indices
     if ~strcmpi(field_names{i}, 'print')
         len = fprintf('%s:',field_name_dict.(field_names{i}));
         fprintf(repmat(' ', 1, 42-len));
