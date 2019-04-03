@@ -1,18 +1,18 @@
-function params = getrawparams(raw_file)
+function params = getrawparams(raw_dir)
 % GETRAWPARAMS identifies darkness level, saturation level, and default
 % white balance multipliers for the target raw file via dcraw.
 
-assert(exist(raw_file, 'file') == 2, 'File %s is not found.', raw_file);
-[~, ~, extension] = fileparts(raw_file);
+assert(exist(raw_dir, 'file') == 2, 'File %s is not found.', raw_dir);
+[~, ~, extension] = fileparts(raw_dir);
 
 % dcraw with option -v will print raw parameters
-[status, cmdout] = system(['dcraw -v -d ', raw_file]); % save to .pgm file(s)
+[status, cmdout] = system(['dcraw -v -d ', raw_dir]); % save to .pgm file(s)
 if status
     error(cmdout);
 end
 
 % delete the .pgm file
-pgm_file = strrep(raw_file, extension, '.pgm');
+pgm_file = strrep(raw_dir, extension, '.pgm');
 delete(pgm_file);
 
 % get parameters

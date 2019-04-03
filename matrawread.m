@@ -295,11 +295,7 @@ if nargout > 0
     varargout{1} = raw;
 end
 if nargout > 1
-    info = imfinfo(raw_file);
-    if numel(info) > 1
-        info = info(1);
-    end
-    varargout{2} = info;
+    varargout{2} = getrawinfo(raw_file);
 end
 
 if numel(folder_contents) > 1
