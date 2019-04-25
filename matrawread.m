@@ -347,7 +347,8 @@ else
     G1 = raw(g1_begin(1):2:end, g1_begin(2):2:end);
     G2 = raw(g2_begin(1):2:end, g2_begin(2):2:end);
     B = raw(b_begin(1):2:end, b_begin(2):2:end);
-    RGB  = cat(3, R, (G1 + G2)/2, B);
+    G = cast((double(G1) + double(G2))/2, 'like', G1); % to avoid overflow
+    RGB  = cat(3, R, G, B);
 end
 end
 
