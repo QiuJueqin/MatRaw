@@ -12,7 +12,7 @@ function output = matrawproc(raw, varargin)
 %             darkness level subtracted)
 %
 % OPTIONAL PARAMETERS:
-% wb:         white balancing option, can be a 3x1 vector, or 'manual', or
+% wb:         white balancing option, can be a 1x3 vector, or 'manual', or
 %             'grayworld'. If 'wb' is a numeric vector (in [R, G, B]
 %             format), the script will use it as the gain coefficients to
 %             correct raw image's white balance; if 'wb'='manual', the
@@ -79,7 +79,7 @@ if ischar(param.wb)
         error('The value of ''wb'' is invalid. Expected input to be either ''manual'' or ''grayworld'' or a 1x3 vector.');
     end
 elseif isnumeric(param.wb)
-    assert(all(size(param.wb) == [1,3]), 'Expected the value of ''wb'' to be a 1x3 vector.');
+    assert(isequal(size(param.wb), [1, 3]), 'Expected the value of ''wb'' to be a 1x3 vector.');
     wb_gain = param.wb;
 else
 	error('The value of ''wb'' is invalid. Expected input to be either ''manual'' or ''grayworld'' or a 1x3 vector.');

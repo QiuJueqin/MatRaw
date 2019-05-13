@@ -178,6 +178,26 @@ for i = 1:numel(folder_contents)
     raw_file = fullfile(folder_contents(i).folder, folder_contents(i).name);
     [folder, name, extension] = fileparts(raw_file);
     
+    % check image orientation
+    try
+        info = getrawinfo(raw_file);
+        % cf. https://www.impulseadventure.com/photo/exif-orientation.html
+        switch info.Orientation
+            case 1
+                rotation_times = 0;
+            case 3
+                rotation_times = 2;
+            case 6
+                rotation_times = 3;
+            case 8
+                rotation_times = 1;
+            otherwise
+                error('Image orientation error.');
+        end
+    catch
+        info = [];
+    end
+        
     % call dcraw.exe in cmd and convert raw data to a .pgm file, without
     % any further processing
     [status, cmdout] = system(['dcraw -4 -D ', raw_file]); % save to .pgm file(s)
@@ -196,11 +216,13 @@ for i = 1:numel(folder_contents)
 
     % demosaicking
     if param.demosaic == true
+        raw = rot90(raw, 4-rotation_times);
         if param.interpolation == true
             raw = demosaic_(raw, param.cfa);
         else
             raw = demosaic_nointerp(raw, param.cfa);
         end
+        raw = rot90(raw, rotation_times);
     end
     
     % subtract the fixed pattern noise template OR darkness level
@@ -212,6 +234,7 @@ for i = 1:numel(folder_contents)
         % subtract the darkness level
         raw = raw - param.darkness;
     else
+        param.fpntemplate = rot90(param.fpntemplate, rotation_times);
         assert(isequal(size(raw), size(param.fpntemplate)), 'Fixed pattern noise template must be of the same size as the target image.');
         assert(isa(param.fpntemplate, 'uint16'), 'Only uint16 data type is supported for the fixed pattern noise template, in case of scale mismatching between two images.');
         raw = raw - param.fpntemplate;
@@ -219,6 +242,7 @@ for i = 1:numel(folder_contents)
     
     % pixel response non-uniformity compensation
     if ~isempty(param.prnutemplate)
+        param.prnutemplate = rot90(param.prnutemplate, rotation_times);
         assert(isequal(size(raw), size(param.prnutemplate)), 'Pixel response non-uniformity template must be of the same size as the target image.');
         assert(isa(param.prnutemplate, 'double'), 'Only double data type is supported for the pixel response non-uniformity template.');
         raw = uint16( double(raw) .* param.prnutemplate );
@@ -244,8 +268,7 @@ for i = 1:numel(folder_contents)
     if param.save == true
         % extract capturing parameters and rename the file
         if param.rename == true
-            try
-                info = getrawinfo(raw_file);
+            if ~isempty(info)
                 exposure = info.DigitalCamera.ExposureTime;
                 f_number = info.DigitalCamera.FNumber;
                 iso = info.DigitalCamera.ISOSpeedRatings;
@@ -257,7 +280,7 @@ for i = 1:numel(folder_contents)
                                 sprintf('F%.1f', f_number),...
                                 sprintf('ISO%d', iso),...
                                 datatime}, '_');
-            catch
+            else
                 warning('Can not extract capturing info.');
             end
         end
