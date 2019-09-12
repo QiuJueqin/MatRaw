@@ -78,15 +78,14 @@ if ischar(param.wb)
     else
         error('The value of ''wb'' is invalid. Expected input to be either ''manual'' or ''grayworld'' or a 1x3 vector.');
     end
+    wb_gain = wb_gain / min(wb_gain);
+    fprintf('White balancing gains: [%.2f, %.2f, %.2f]\n', wb_gain);
 elseif isnumeric(param.wb)
     assert(isequal(size(param.wb), [1, 3]), 'Expected the value of ''wb'' to be a 1x3 vector.');
-    wb_gain = param.wb;
+    wb_gain = param.wb / min(param.wb);
 else
 	error('The value of ''wb'' is invalid. Expected input to be either ''manual'' or ''grayworld'' or a 1x3 vector.');
 end
-
-% normalize the white balance coefficients
-wb_gain = wb_gain / min(wb_gain);
 
 % store in 'param'
 param.wb_gain = wb_gain;
