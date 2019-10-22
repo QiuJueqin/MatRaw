@@ -77,9 +77,9 @@ See also `demo` folder for more details.
 * **Q1**: What are *fixed pattern noise* and *pixel response non-uniformity*?  
   **A1**: They are sensor noise that can be calibrated in advance and removed from each target image. See [this post](http://theory.uchicago.edu/~ejm/pix/20d/tests/noise/index.html) for the comprehensive introduction. They are worth the trouble only when extremely high color accuracy is required. Feel free to ignore them if you are not sure what they are.  
 * **Q2**: How to get a fixed pattern noise template to perform FPN reduction?  
-  **A2**: FPN template can be obtained by taking many black frames and averaging over them.  
+  **A2**: Simply speaking, FPN template can be obtained by taking many black frames and averaging over them. See [here](https://ridiqulous.com/image-sensor-noise-modeling-and-calibration/#dark_current_noise_estimation) (Chinese) for more detailed processings.
 * **Q3**: How to get a pixel response non-uniformity template to perform PRNU compensation?  
-  **A3**: PRNU template can be obtained by taking multiple frames for a uniformly lit object (a blank wall for instance) at the lowest ISO and about 1/2 to 1 stop down from sensor saturation, and then averaging over them after FPN subtracted.  
+  **A3**: PRNU template can be obtained by taking multiple frames for a uniformly lit object (a blank wall for instance) at the lowest ISO and about 1/2 to 1 stop down from sensor saturation, and then averaging over them after FPN subtracted. See [here](https://ridiqulous.com/image-sensor-noise-modeling-and-calibration/#prnu_estimation) (Chinese) for more detailed processings. 
 * **Q4**: Is it possible to remove image noise from other source?  
   **A4**: Other fixed noise can be removed by appropriately passing the `fpntemplate` argument. For example, thermal noise can be effectively removed by replacing a fixed pattern noise template with a thermal noise template, which is exactly the procedure that is carried out by the camera when *long exposure noise reduction* (LENR) is enabled.
 
