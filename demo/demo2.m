@@ -1,4 +1,4 @@
-%% Demo 2
+W%% Demo 2
 % Calibrate darkness and saturation levels for Nikon D3x DSLR.
 %
 % These two parameters can be obtained via dcraw with '-d -v' option too,
